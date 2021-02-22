@@ -62,7 +62,7 @@ class bmdFile:
 	def loadBones(self, bs):
 		sectionID = bs.readUInt()
 		boneCount = bs.readUInt()
-		for i in range(0, boneCount):
+		for i in range(boneCount):
 			boneID = bs.readInt()
 			boneParent = bs.readInt()
 			BonePos = NoeVec3.fromBytes(bs.readBytes(12))
@@ -81,8 +81,8 @@ class bmdFile:
 	#Load materials - mat id/index	
 	def loadMaterialList(self, bs):
 		sectionID = bs.readUInt()
-		matCount = bs.readUInt()		
-		for i in range(0, matCount):
+		matCount = bs.readUInt()
+		for _ in range(matCount):
 			m_id = bs.readInt()
 			m_name = bs.readString()
 			self.alignPosition(bs, 4)			
@@ -94,7 +94,7 @@ class bmdFile:
 		triCount = bs.readUInt()
 		#first make a fake index array(not sure if this is the right way)
 		fbo = bytearray()
-		for ir in range(0,(triCount - 1)):
+		for ir in range(triCount - 1):
 			fbo.extend(bytearray(struct.pack('<i',0 + ir)))
 			fbo.extend(bytearray(struct.pack('<i',1 + ir)))
 			fbo.extend(bytearray(struct.pack('<i',2 + ir)))			
@@ -107,7 +107,7 @@ class bmdFile:
 		#	print(hex(fbo[pv]))
 		#triangle buffer object (contains matIndex + 3 verts)
 		tbo = []
-		for i in range(0, triCount):
+		for _ in range(triCount):
 			mat_index = bs.readInt()
 			triElemPos = []
 			triElemNor = []
@@ -115,7 +115,7 @@ class bmdFile:
 			triElemBL = []
 			triElemBW = []
 			#generate buffer content
-			for trx in range(0,3):
+			for _ in range(3):
 				#position
 				vertPos_X = bs.readFloat()
 				vertPos_Y = bs.readFloat()
@@ -129,15 +129,15 @@ class bmdFile:
 				vertNor_Z = bs.readFloat()
 				triElemNor.append(vertNor_X)
 				triElemNor.append(vertNor_Y)
-				triElemNor.append(vertNor_Z)				
+				triElemNor.append(vertNor_Z)
 				#uv
 				vertUV_X = bs.readFloat()
 				vertUV_Y = bs.readFloat()
 				triElemUV.append(vertUV_X)
-				triElemUV.append(vertUV_Y)						
+				triElemUV.append(vertUV_Y)
 				#read boneLinks
 				NumOfBoneLinks = bs.readInt()
-				for j in range(0,NumOfBoneLinks):
+				for _ in range(NumOfBoneLinks):
 					triElemBL.append(bs.readInt())
 					triElemBW.append(bs.readFloat())
 
@@ -145,35 +145,35 @@ class bmdFile:
 				if NumOfBoneLinks == 4:
 					pass
 				elif NumOfBoneLinks == 3:
-					for bx in range(0,1):
+					for _ in range(1):
 						triElemBL.append(0)
 						triElemBW.append(0)
 				elif NumOfBoneLinks == 2:
-					for bx in range(0,2):	
+					for _ in range(2):	
 						triElemBL.append(0)
 						triElemBW.append(0)
 				elif NumOfBoneLinks == 1:
-					for bx in range(0,3):	
+					for _ in range(3):	
 						triElemBL.append(0)
 						triElemBW.append(0)
 				elif NumOfBoneLinks == 0:
-					for bx in range(0,4):
+					for _ in range(4):
 						triElemBL.append(0)
 						triElemBW.append(0)
 				else:
 					noesis.doException("This value should always be something inrange 0 to 4 got a value of " + str(NumOfBoneLinks))
-				
+
 			#check our data?
 			#for ic in range(0,len(triElemPos)):
 			#print("len of POSXYZ: " + str(len(triElemPos)))
-		
+
 			#pack up to bytearray
 			vertBuff = bytes()
 			normBuff = bytes()
 			uvBuff = bytes()
 			idxBuff = bytes()
 			bwxBuff = bytes()
-			
+
 			vertBuff = struct.pack("<" + 'f'*len(triElemPos), *triElemPos)
 			normBuff = struct.pack("<" + 'f'*len(triElemNor), *triElemNor)
 			uvBuff = struct.pack("<" + 'f'*len(triElemUV), *triElemUV)
@@ -184,7 +184,7 @@ class bmdFile:
 			rapi.rpgBindNormalBuffer(normBuff, noesis.RPGEODATA_FLOAT, 12)
 			rapi.rpgBindUV1Buffer(uvBuff, noesis.RPGEODATA_FLOAT, 8)
 			rapi.rpgBindBoneIndexBufferOfs(idxBuff,noesis.RPGEODATA_INT,16,0,4)
-			rapi.rpgBindBoneWeightBufferOfs(bwxBuff,noesis.RPGEODATA_FLOAT,16,0,4)		
+			rapi.rpgBindBoneWeightBufferOfs(bwxBuff,noesis.RPGEODATA_FLOAT,16,0,4)
 			#rapi.rpgBindPositionBufferOfs(triElemBuffer, noesis.RPGEODATA_FLOAT, 32, 0)
 			#rapi.rpgBindNormalBufferOfs(triElemBuffer, noesis.RPGEODATA_FLOAT, 32, 12)
 			#rapi.rpgBindUV1BufferOfs(triElemBuffer, noesis.RPGEODATA_FLOAT, 32, 24)
